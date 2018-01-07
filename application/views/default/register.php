@@ -35,22 +35,24 @@
   </div>
   <!-- /.login-logo -->
   <div class="login-box-body">
-    <h5 class="login-box-msg">Đăng nhập hệ thống</br></h5>
+    <h5 class="login-box-msg">Đăng ký thành viên</br></h5>
     <form action="#" method="post">
       <div class="form-group has-feedback">
-        <input name="username" type="text" class="form-control" placeholder="Email" required />
+        <input name="email" type="email" class="form-control" placeholder="Email" required />
         <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
       </div>
       <div class="form-group has-feedback">
-        <input name="password" type="password" class="form-control" placeholder="Password" required />
+        <input name="password" type="password" class="form-control" placeholder="Mật khẩu" required />
         <span class="glyphicon glyphicon-lock form-control-feedback"></span>
-      </div>			
+      </div>	
+      <div class="form-group has-feedback">
+        <input name="password_scure" type="password_scure" class="form-control" placeholder="Xác nhận mật khẩu" required />
+        <span class="glyphicon glyphicon-lock form-control-feedback"></span>
+      </div>		
       <div class="row">
-       
-                <input type="hidden" name="cmd" class="form-control" value="cmdSign" required />
-        
+                <input type="hidden" name="cmd" class="form-control" value="cmdRegister" required />
         <div class="col-xs-6">
-          <a href="<?php echo base_url();?>register" class="btn btn-default btn-lg">Tạo Tài Khoản</a>
+          <a href="<?php echo base_url();?>sign" class="btn btn-default btn-lg">Đăng nhập</a>
         </div>
         <!-- /.col -->
         <div class="col-xs-4">
