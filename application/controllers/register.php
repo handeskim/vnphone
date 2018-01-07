@@ -34,28 +34,10 @@ class Register extends MY_Controller{
 									);
 									$InstallUser = $this->AddClients($params);
 									if(isset($InstallUser)==true){
-										$params_sign = array(
-											'username' => $email,
-											'password' => md5($password),
-										);
-										$results = $this->SignCheck($params_sign);
-										if($results==false){
-											$msg = $this->default_error_notfound();
-										}else{
-											$params_session = array(
-												'auth_sign'=> true,
-												'data_users'=> $results[0],
-											);
-											$this->session->set_userdata($params_session);
-											$check = $this->session->userdata('auth_sign');
-											
-											if($check==true){
-												redirect(base_url('apps'));
-											}else{
-												$msg = $this->default_error_session();
-											}
-										}
-										$msg = $this->tmp_default_success("đăng ký thành công");
+										$mesf = 
+										'Tài khoản đã được đăng kí thành công. Vui lòng liên hệ <a href="http://fb.com/ductran88">Admin</a> để được kích hoạt';
+										$msg = $this->tmp_default_success($mesf);
+										
 									}else{
 										$msg = $this->tmp_default_error("Vui lòng thử lại");
 									}	
