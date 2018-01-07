@@ -46,12 +46,15 @@
         <span class="glyphicon glyphicon-lock form-control-feedback"></span>
       </div>			
       <div class="row">
-        <div class="col-xs-8">
+       
                 <input type="hidden" name="cmd" class="form-control" value="cmdSign" required />
+        
+        <div class="col-xs-6">
+          <a href="@" class="btn btn-default btn-lg">Tạo Tài Khoản</a>
         </div>
         <!-- /.col -->
         <div class="col-xs-4">
-          <button type="submit" class="btn btn-primary btn-block btn-flat">Sign In</button>
+          <button type="submit" class="btn btn-primary  btn-lg ">Đăng Nhập</button>
         </div>
         <!-- /.col -->
       </div>
@@ -60,7 +63,12 @@
   <!-- /.login-box-body -->
 </div>
 <!-- /.login-box -->
-
+<style>
+.btn{
+  line-height: normal !important;
+  height: 40px !important;
+}
+</style>
 <!-- jQuery 3 -->
 <script src="<?php echo base_url();?>public/bower_components/jquery/dist/jquery.min.js"></script>
 <!-- Bootstrap 3.3.7 -->
