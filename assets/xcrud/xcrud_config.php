@@ -5,7 +5,7 @@ class Xcrud_config
 {
 	
     // default connection
-    public static $dbname = 'atp'; // Your database name
+    public static $dbname = 'apt'; // Your database name
     public static $dbuser = 'root'; // Your database username
     public static $dbpass = ''; // // Your database password
     public static $dbhost = 'localhost'; // Your database host, 'localhost' is default.

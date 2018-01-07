@@ -38,15 +38,15 @@
     <h5 class="login-box-msg">Đăng ký thành viên</br></h5>
     <form action="#" method="post">
       <div class="form-group has-feedback">
-        <input name="email" type="email" class="form-control" placeholder="Email" required />
+        <input id="email" name="email" type="email" class="form-control" placeholder="Email" required />
         <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
       </div>
       <div class="form-group has-feedback">
-        <input name="password" type="password" class="form-control" placeholder="Mật khẩu" required />
+        <input id="pw1" name="password" type="password" class="form-control" placeholder="Mật khẩu" required />
         <span class="glyphicon glyphicon-lock form-control-feedback"></span>
       </div>	
       <div class="form-group has-feedback">
-        <input name="password_scure" type="password_scure" class="form-control" placeholder="Xác nhận mật khẩu" required />
+        <input id="pw2" name="password_scure" type="password_scure" class="form-control" placeholder="Xác nhận mật khẩu" required />
         <span class="glyphicon glyphicon-lock form-control-feedback"></span>
       </div>		
       <div class="row">
@@ -56,7 +56,7 @@
         </div>
         <!-- /.col -->
         <div class="col-xs-4">
-          <button type="submit" class="btn btn-primary  btn-lg ">Đăng Nhập</button>
+          <button type="submit" class="btn btn-primary  btn-lg ">Tạo Tài khoản</button>
         </div>
         <!-- /.col -->
       </div>

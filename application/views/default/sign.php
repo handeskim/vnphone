@@ -50,7 +50,7 @@
                 <input type="hidden" name="cmd" class="form-control" value="cmdSign" required />
         
         <div class="col-xs-6">
-          <a href="<?php echo base_url();?>register" class="btn btn-default btn-lg">Tạo Tài Khoản</a>
+          <a href="<?php echo base_url();?>register" class="btn btn-default btn-lg">Đăng ký</a>
         </div>
         <!-- /.col -->
         <div class="col-xs-4">

@@ -14,7 +14,6 @@ class Sign extends MY_Controller{
 		$password  = trim($params_sign["password"]);
 		$sql_sign = "SELECT * FROM `users` WHERE `username` = '$username' AND `passwords` = '$password' AND `status` = 1";
 		$result = $this->GlobalMD->query_global($sql_sign);
-		// var_dump($result);die;
 		if(!empty($result)){
 			return $result;
 		}else{
