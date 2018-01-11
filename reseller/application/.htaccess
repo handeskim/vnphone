@@ -1,5 +1,6 @@
-RewriteEngine on
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule .* index.php/$0 [PT,L]  
-RewriteRule ^(.+)(\s|%20)(.+)$ /$1-$3 [R=301,QSA,L,NE];
+<IfModule authz_core_module>
+    Require all denied
+</IfModule>
+<IfModule !authz_core_module>
+    Deny from all
+</IfModule>

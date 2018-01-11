@@ -1,367 +1,255 @@
-<?php  if (!defined('BASEPATH')) exit('No direct script access allowed');
+<?php
+/**
+ * CodeIgniter
+ *
+ * An open source application development framework for PHP
+ *
+ * This content is released under the MIT License (MIT)
+ *
+ * Copyright (c) 2014 - 2017, British Columbia Institute of Technology
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * @package	CodeIgniter
+ * @author	EllisLab Dev Team
+ * @copyright	Copyright (c) 2008 - 2014, EllisLab, Inc. (https://ellislab.com/)
+ * @copyright	Copyright (c) 2014 - 2017, British Columbia Institute of Technology (http://bcit.ca/)
+ * @license	http://opensource.org/licenses/MIT	MIT License
+ * @link	https://codeigniter.com
+ * @since	Version 2.0.0
+ * @filesource
+ */
+defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Cache
-{
-	
-	var $options = array(
-						'dir' => 'cache',				//Default to BASEPATH.'cache'
-						'cache_postfix' => '.cache',	//Prefix to all cache filenames
-						'expiry_postfix' => '.exp',		//Expiry file prefix
-						'group_postfix' => '.group', 	//Group directory prefix
-						'default_ttl' => 3600  			//Default time to live = 3600 seconds (One hour).
-					);
-	var $memcache;
-	var $useMemcache = true; // true: using mecache, else using disk cache
-	var $memip="127.0.0.1";
-	var $memport="11211";
-	// var $memip;
-	// var $memport;
+/**
+ * CodeIgniter Caching Class
+ *
+ * @package		CodeIgniter
+ * @subpackage	Libraries
+ * @category	Core
+ * @author		EllisLab Dev Team
+ * @link
+ */
+class CI_Cache extends CI_Driver_Library {
+
 	/**
-	 * 	Constructor
-	 * 
-	 * 	@param	Options to override defaults
+	 * Valid cache drivers
+	 *
+	 * @var array
 	 */
-	function Cache($options = NULL)
-	{
-		
-		if ($options != NULL) $this->options = array_merge($this->options, $options);
-		if($this->useMemcache){
-			$this->_useMemcache($this->memip, $this->memport);
-		}
-	}
-	
+	protected $valid_drivers = array(
+		'apc',
+		'dummy',
+		'file',
+		'memcached',
+		'redis',
+		'wincache'
+	);
+
 	/**
-	 * 	Check if a item has a (valid) cache
-	 * 
-	 * 	@param	Cache id
-	 * 	@param	Cache group id (optional)
-	 * 	@return Boolean indicating if cache available
+	 * Path of cache files (if file-based cache)
+	 *
+	 * @var string
 	 */
-	function is_cached($cache_id, $cache_group = NULL)
+	protected $_cache_path = NULL;
+
+	/**
+	 * Reference to the driver
+	 *
+	 * @var mixed
+	 */
+	protected $_adapter = 'dummy';
+
+	/**
+	 * Fallback driver
+	 *
+	 * @var string
+	 */
+	protected $_backup_driver = 'dummy';
+
+	/**
+	 * Cache key prefix
+	 *
+	 * @var	string
+	 */
+	public $key_prefix = '';
+
+	/**
+	 * Constructor
+	 *
+	 * Initialize class properties based on the configuration array.
+	 *
+	 * @param	array	$config = array()
+	 * @return	void
+	 */
+	public function __construct($config = array())
 	{
-		if($this->useMemcache != true)
+		isset($config['adapter']) && $this->_adapter = $config['adapter'];
+		isset($config['backup']) && $this->_backup_driver = $config['backup'];
+		isset($config['key_prefix']) && $this->key_prefix = $config['key_prefix'];
+
+		// If the specified adapter isn't available, check the backup.
+		if ( ! $this->is_supported($this->_adapter))
 		{
-		if ($this->_get_expiry($cache_id, $cache_group) > time()) return TRUE;
-		
-		$this->remove($cache_id, $cache_group);
-		
-		return FALSE;
-		}
-		else{
-			if($this->memcache->connect($this->memip, $this->memport) == true)
+			if ( ! $this->is_supported($this->_backup_driver))
 			{
-				if($this->memcache->get($cache_id) != false)
-				{
-					return true;
-				}
-				else
-				{
-					return false;
-				}
+				// Backup isn't supported either. Default to 'Dummy' driver.
+				log_message('error', 'Cache adapter "'.$this->_adapter.'" and backup "'.$this->_backup_driver.'" are both unavailable. Cache is now using "Dummy" adapter.');
+				$this->_adapter = 'dummy';
 			}
 			else
 			{
-				return false;
+				// Backup is supported. Set it to primary.
+				log_message('debug', 'Cache adapter "'.$this->_adapter.'" is unavailable. Falling back to "'.$this->_backup_driver.'" backup adapter.');
+				$this->_adapter = $this->_backup_driver;
 			}
 		}
-		
 	}
-	
-	/**
-	 * 	Connects to memcached daemon
-	 * 
-	 * 	@param	ip
-	 * 	@param	port
-	 */
-	function _useMemcache($ip, $port)
-	{
-		if(class_exists('Memcache'))
-		{
-			
-			$this->memcache = new Memcache();
-			// echo $ip. $port;die;
-			if($this->memcache->connect($ip, $port) == true)
-			{
-			$this->useMemcache = true;
-			$this->memip = $ip;
-			$this->memport = $port;
-			$this->memcache->close();
-			return true;
-			}
-			else
-			{
-				return false;
-			}
-			
-		}
-		else{
-			return false;
-		}
-	}
-	function useFile()
-	{
-		$this->useMemcache = false;
-	}
-	/**
-	 * 	Save an item to the cache
-	 * 
-	 * 	@param	Cache id
-	 * 	@param	Data object
-	 * 	@param	Cache group id (optional)
-	 * 	@param	Time to live for this item
-	 */
-	function save($cache_id, $data, $cache_group = NULL, $ttl = NULL)
-	{
-		if($this->useMemcache != true)
-		{
-		if ($cache_group !== NULL)
-		{
-		
-			$group_dir = $this->_group_dir($cache_group);
-			
-			if (!file_exists($group_dir)) mkdir($group_dir);
-			
-		}
-		
-		$file = $this->_file($cache_id, $cache_group);
-		$cache_file = $file.$this->options['cache_postfix'];
-		$expiry_file = $file.$this->options['expiry_postfix'];
-		
-		if ($ttl === NULL) $ttl = $this->options['default_ttl'];
 
-		//
-		//	Ok, so setting ttl = 0 is not quite forever, but 1000 years
-		//	Is your PHP code going to be running for 1000 years? If so dont use this library (or just regenerate the cache then)!
-		//
-		if ($ttl == 0) $ttl = 31536000000; //1000 years in seconds
-				
-		$expire_time = time() + $ttl;		
-				
-	    $f1 = fopen($expiry_file, 'w');
-		$f2 = fopen($cache_file, 'w');
-		
-	    flock($f1, LOCK_EX);
-		flock($f2, LOCK_EX);
-		
-		fwrite($f1, $expire_time);
-		fwrite($f2, serialize($data));
-		
-		flock($f1, LOCK_UN);
-		flock($f2, LOCK_UN);
-		
-		fclose($f1);
-		fclose($f2);
-		}
-		else
-		{
-			if($this->memcache->connect($this->memip, $this->memport) == true)
-			{
-			if($ttl == null) { $ttl = $this->options['default_ttl'];}
-			$this->memcache->set($cache_id, $data, MEMCACHE_COMPRESSED, $ttl);
-			$this->memcache->close();
-			}
-		}
-		
-	}
-	
-	/**
-	 * 	Get and return an item from the cache
-	 * 
-	 * 	@param	Cache Id
-	 * 	@param	Cache group Id
-	 * 	@param	Should I check the expiry time?
-	 * 	@return The object or NULL if not available
-	 */
-	function get($cache_id, $cache_group = NULL, $skip_checking = FALSE)
-	{
-		if($this->useMemcache != true)
-		{
-		if (!$skip_checking && !$this->is_cached($cache_id, $cache_group)) return NULL;
-		
-		$cache_file = $this->_file($cache_id, $cache_group).$this->options['cache_postfix'];
-		
-		if (!is_file($cache_file)) return NULL;
-		
-		return unserialize(file_get_contents($cache_file));
-		}
-		else
-		{
-			if($this->memcache->connect($this->memip, $this->memport) == true)
-			{
-				$result = $this->memcache->get($cache_id);
-				$this->memcache->close();
-				return $result;
-			}
-		}
-		
-	}
-	
-	/**
-	 * 	Remove an item from the cache
-	 * 
-	 * 	@param	Cache Id
-	 * 	@param 	Cache group Id
-	 */
-	function remove($cache_id, $cache_group = NULL)
-	{
-		if($this->useMemcache != true)
-		{
-		$file = $this->_file($cache_id, $cache_group);
-		$cache_file = $file.$this->options['cache_postfix'];
-		$expiry_file = $file.$this->options['expiry_postfix'];
-	
-		@unlink($cache_file);
-		@unlink($expiry_file);
-		}
-		else
-		{
-			if($this->memcache->connect($this->memip, $this->memport) == true)
-			{
-				$this->memcache->delete($cache_id);
-				$this->memcache->close();
-			}
-		}
-		
-	}
-	
-	/**
-	 * 	Remove an entire group
-	 * 
-	 * 	@param	Cache group Id
-	 */
-	function remove_group($cache_group)
-	{
-		if($this->useMemcache != true)
-		{
-		$group_dir = $this->_group_dir($cache_group);
-		
-		//
-		//	Empty the directory
-		//
-		if(!$dh = @opendir($group_dir)) return;
-		
-		while (($obj = readdir($dh))) {
-		
-		    if($obj=='.' || $obj=='..') continue;
-	    	@unlink($group_dir.'/'.$obj);
-		
-		}
-		
-		closedir($dh);
-		
-		//
-		//	Delete the dir for tidyness
-		//
-		@rmdir($group_dir);
-		}
-		
-	}
-	
-	/**
-	 * 	Remove an array of cached items
-	 * 
-	 * 	@param	Array of cache ids
-	 * 	@param	Cache group Id
-	 */
-	function remove_ids($cache_ids, $cache_group = NULL)
-	{
-		if($this->useMemcache != true)
-		{
-		if (!is_array($cache_ids)) $cache_ids = array($cache_ids);
+	// ------------------------------------------------------------------------
 
-		//
-		//	Hash all ids
-		//
-		$hashes = array();
-		
-		foreach($cache_ids as $cache_id)
+	/**
+	 * Get
+	 *
+	 * Look for a value in the cache. If it exists, return the data
+	 * if not, return FALSE
+	 *
+	 * @param	string	$id
+	 * @return	mixed	value matching $id or FALSE on failure
+	 */
+	public function get($id)
+	{
+		return $this->{$this->_adapter}->get($this->key_prefix.$id);
+	}
+
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Cache Save
+	 *
+	 * @param	string	$id	Cache ID
+	 * @param	mixed	$data	Data to store
+	 * @param	int	$ttl	Cache TTL (in seconds)
+	 * @param	bool	$raw	Whether to store the raw value
+	 * @return	bool	TRUE on success, FALSE on failure
+	 */
+	public function save($id, $data, $ttl = 60, $raw = FALSE)
+	{
+		return $this->{$this->_adapter}->save($this->key_prefix.$id, $data, $ttl, $raw);
+	}
+
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Delete from Cache
+	 *
+	 * @param	string	$id	Cache ID
+	 * @return	bool	TRUE on success, FALSE on failure
+	 */
+	public function delete($id)
+	{
+		return $this->{$this->_adapter}->delete($this->key_prefix.$id);
+	}
+
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Increment a raw value
+	 *
+	 * @param	string	$id	Cache ID
+	 * @param	int	$offset	Step/value to add
+	 * @return	mixed	New value on success or FALSE on failure
+	 */
+	public function increment($id, $offset = 1)
+	{
+		return $this->{$this->_adapter}->increment($this->key_prefix.$id, $offset);
+	}
+
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Decrement a raw value
+	 *
+	 * @param	string	$id	Cache ID
+	 * @param	int	$offset	Step/value to reduce by
+	 * @return	mixed	New value on success or FALSE on failure
+	 */
+	public function decrement($id, $offset = 1)
+	{
+		return $this->{$this->_adapter}->decrement($this->key_prefix.$id, $offset);
+	}
+
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Clean the cache
+	 *
+	 * @return	bool	TRUE on success, FALSE on failure
+	 */
+	public function clean()
+	{
+		return $this->{$this->_adapter}->clean();
+	}
+
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Cache Info
+	 *
+	 * @param	string	$type = 'user'	user/filehits
+	 * @return	mixed	array containing cache info on success OR FALSE on failure
+	 */
+	public function cache_info($type = 'user')
+	{
+		return $this->{$this->_adapter}->cache_info($type);
+	}
+
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Get Cache Metadata
+	 *
+	 * @param	string	$id	key to get cache metadata on
+	 * @return	mixed	cache item metadata
+	 */
+	public function get_metadata($id)
+	{
+		return $this->{$this->_adapter}->get_metadata($this->key_prefix.$id);
+	}
+
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Is the requested driver supported in this environment?
+	 *
+	 * @param	string	$driver	The driver to test
+	 * @return	array
+	 */
+	public function is_supported($driver)
+	{
+		static $support;
+
+		if ( ! isset($support, $support[$driver]))
 		{
-		
-			$hashes[] = md5($cache_id);
-			
+			$support[$driver] = $this->{$driver}->is_supported();
 		}
 
-		$group_dir = $this->_group_dir($cache_group);
-		
-		//
-		//	Delete matching files
-		//
-		if(!$dh = @opendir($group_dir)) return;
-		
-		$filecount = 0;
-		$delcount = 0;
-		
-		while (($obj = readdir($dh))) {
-		
-		    if($obj=='.' || $obj=='..') continue;
-		
-			$parts = explode(".", $obj);
-			$hash = $parts[0];
-		
-	    	if (in_array($hash, $hashes)) 
-			{
-				
-				@unlink($group_dir.'/'.$obj);
-				$delcount++;
-				
-			}
-				
-			$filecount ++;
-		
-		}
-		
-		closedir($dh);
-		
-		//
-		//	Delete the dir if empty
-		//
-		if ($filecount == $delcount) @rmdir($group_dir);
-		}
-		else
-		{
-			if(is_array($cache_ids))
-			{
-			if($this->memcache->connect($this->memip, $this->memport) == true)
-			{
-				foreach($cache_ids as $cache_id)
-				{
-					$this->memcache->delete($cache_id);
-				}
-			}
-			}
-		}
+		return $support[$driver];
 	}
-	
-	//
-	//	Private methods
-	//
-	
-	function _get_expiry($cache_id, $cache_group = NULL)
-	{
-		
-		$file = $this->_file($cache_id, $cache_group).$this->options['expiry_postfix'];
-	
-		if (!is_file($file)) return 0;
-		
-		return intval(file_get_contents($file));
-		
-	}
-	
-	function _file($cache_id, $cache_group = NULL)
-	{
-		
-		return $this->_group_dir($cache_group).'/'.md5($cache_id);
-		
-	}
-	
-	function _group_dir($cache_group)
-	{
-		
-		$dir = ($cache_group != NULL) ? md5($cache_group).$this->options['group_postfix'] : '';
-		
-		return BASEPATH.$this->options['dir'].'/'.$dir;
-		
-	}
-	
 }
-?>
