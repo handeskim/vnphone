@@ -205,7 +205,7 @@ $config['rest_key_name'] = 'api_jangin';
 |	'logs'
 |
 */
-$config['rest_logs_table'] = 'jangin_api_logs';
+$config['rest_logs_table'] = 'api_logs';
 
 /*
 |--------------------------------------------------------------------------
