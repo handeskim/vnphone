@@ -262,11 +262,12 @@ class Apps extends MY_Controller{
 			{
 				$row = explode($new_tab, $string);
 				if(isset($row['0']) && $row['0'] != ""){
+					
 					$outoutArr[] = trim($row['0']);
 				}
 			}
 		}
-		return $outoutArr;
+		return array_filter($outoutArr);
 	}
 
 	
