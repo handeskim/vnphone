@@ -5,16 +5,12 @@ class Apps extends MY_Controller{
 		$this->load->library('rest');
 		$this->load->model('global_model', 'GlobalMD');	
 		$this->login = $this->session->userdata('auth_sign');
-		$config =  array('server' => base_url(),);
-		$this->rest->initialize($config);
-		if(isset($this->login)){
+		if($this->login){
 			$this->user_data = $this->session->userdata('data_users');
 			$this->permisson = $this->user_data['role'];
 			$id_clients = $this->user_data['id'];
 			$this->uid_clients = $this->user_data['id'];
 			$this->level = $this->user_data['level'];
-			$this->expired = $this->user_data['expired'];
-			$this->score = $this->user_data['score'];
 			$pid = $this->session->userdata('session_id');
 			$this->key_pid = $this->uid_clients .date("Ymd",time()).'_'.$pid;
 			if($this->level == 2){
@@ -34,39 +30,18 @@ class Apps extends MY_Controller{
 	
 
 	public function index(){
-		$paramsx = array(
-			'uid_clients' => $this->uid_clients,
-			'level' => $this->level,
-			'expired' => $this->expired,
-			'score' => $this->score,
-		);
-		$response = $this->rest->get('apps/api/ClientScore',$paramsx);
-		// $response = $this->rest->get('apps/api/ClientScore');
-		// $checkPoint = $response->results;
-		// var_dump($response);
-		// var_dump($checkPoint);
-		// if((int)$this->level == 1){
-			// if($checkPoint <= 0 ){
-				// $Client = $this->session->userdata('data_users');
-				// var_dump($Client);
-				// echo "sao the nhi";
-				// redirect(base_url('route'));
-			// }
-		// }
 		$error = "";
 		$msg ='';
 		$params = array(
-			'total_uid' => '0',
-			'total_convert' => '0',
+			'total_uid' => '',
+			'total_convert' => '',
 			'Percent_convert' => 0,
-			'udi_kotimthay' => 0,
 		);
-		//	$recaptcha = $this->input->post('g-recaptcha-response');
-		//$response_capchar = $this->recaptcha->verifyResponse($recaptcha);
-		//	if (isset($response_capchar['success']) and $response_capchar['success'] === true) {
-		$cmd = $this->input->post('cmd');
-		if($cmd == 'c1'){
+		$recaptcha = $this->input->post('g-recaptcha-response');
+		$response_capchar = $this->recaptcha->verifyResponse($recaptcha);
+		if (isset($response_capchar['success']) and $response_capchar['success'] === true) {
 			$ArrayConvert = $this->FileUpload();
+			
 			if(!empty($ArrayConvert)){
 				$x = count($ArrayConvert);
 				if($x > 100000){
@@ -110,7 +85,6 @@ class Apps extends MY_Controller{
 			'user_data' => $this->user_data,
 			'title'=> 'Tools',
 			'title_main' => 'Tools',
-			'udi_kotimthay' =>$params['udi_kotimthay'],
 		);
 		
 		$this->parser->parse('default/header',$data);
@@ -119,28 +93,10 @@ class Apps extends MY_Controller{
 		$this->parser->parse('main_user',$data);
 		$this->parser->parse('default/footer',$data);
 	}
-	private function adddotstring($strNum) {
- 
-        $len = strlen($strNum);
-        $counter = 3;
-        $result = "";
-        while ($len - $counter >= 0)
-        {
-            $con = substr($strNum, $len - $counter , 3);
-            $result = '.'.$con.$result;
-            $counter+= 3;
-        }
-        $con = substr($strNum, 0 , 3 - ($counter - $len) );
-        $result = $con.$result;
-        if(substr($result,0,1)=='.'){
-            $result=substr($result,1,$len+1);   
-        }
-        return $result;
-	}
+	
 	private function running_convert($ArrayConvert){
-		$total_convert ='0';
+		$total_convert ='';
 		$Percent_convert = 0;
-		$kotimthay ='0';
 		$total_uid = count($ArrayConvert);
 		$this->redis->set($this->key_pid, json_encode($ArrayConvert));
 		//////////////////////////////////////////////////////////////////////////
@@ -155,19 +111,16 @@ class Apps extends MY_Controller{
 		$total_convertComplete = count($ResultsConvertCompleteUID);
 		$total_convert_raw = count($ResultsConvert);
 		$Percent = $total_convert_raw/$total_uid;
-		$total_convert = $total_convertComplete;
+		$total_convert = $total_convertComplete .'/'.$total_convert_raw;
 		if(!empty($Percent)){
 			if($Percent > 0){
 				$Percent_convert = round(($Percent*100),1);
 			}
 		}
-		$kotimthay = $total_uid-$total_convert;
 		$response = array(
-			'total_uid' =>number_format($total_uid),
-			'total_convert' =>number_format($total_convert),
+			'total_uid' =>$total_uid,
+			'total_convert' =>$total_convert,
 			'Percent_convert' =>$Percent_convert,
-			'udi_kotimthay' =>number_format($kotimthay)
-
 		);
 		return $response;
 	}
@@ -178,7 +131,6 @@ class Apps extends MY_Controller{
 		}
 		return $arrayNew;
 	}
-	
 	private function PaymentConvert($array){
 		$user_data = $this->session->userdata('data_users');
 		$uid = $user_data['id'];
@@ -209,7 +161,7 @@ class Apps extends MY_Controller{
 			}
 		}else{
 			$this->redis->set('response_complete'.$this->key_pid, json_encode($array));
-		
+			///urn true;
 		}
 	}
 	private function ResponseConvertCompleteUID(){
@@ -244,14 +196,17 @@ class Apps extends MY_Controller{
 		$msg = '<div class="alert alert-danger alert-dismissible">
 		<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
 		<h4><i class="icon fa fa-ban"></i> Sorry!</h4>
-		Xem lại file UID của bạn, vui lòng bấm Remove / Refresh và thực hiện lại
+		Sorry, Caching performing old convert UID.
+		Please refresh before proceeding, click delete button.
 		</div>';
 		return $msg;
 	}
 	private function limit_request_http(){
 		$msg = '<div class="alert alert-danger alert-dismissible">
 		<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-		<h4><i class="icon fa fa-ban"></i>Xem lại file UID của bạn, vui lòng chọn file và thực hiện lại!
+		<h4><i class="icon fa fa-ban"></i> Sorry!</h4>
+		Sorry, you have exceeded the PID HTTP Header Request limit.
+		Please try using the upload file.txt with multi-process handling requirements.
 		</div>';
 		return $msg;
 	}
@@ -277,8 +232,7 @@ class Apps extends MY_Controller{
 				}
 			}
 		}
-		//return $outoutArr; 
-		return array_filter($outoutArr); //
+		return $outoutArr;
 	}
 
 	

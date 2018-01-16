@@ -4,18 +4,17 @@ class Payment extends MY_Controller{
 		parent::__construct();
 	
 		
-		 $this->access_key = 'xxxxxxx';
-		 $this->secret = 'xxxxxxxxxxxxxxxx';
+		 $this->access_key = 'ljahosq5n5g86y1ahlr4';
+		 $this->secret = 'pxfozqrv4y9w5auvo9wtw240ccypyyjx';
 		 $this->return_url = base_url()."payment/pay";
-		
+		$this->urls = '';
 	}
 	public function testcase(){
 		echo '<a href="'.base_url().'payment/payment/transactions?amount=1000000&order_id=123123123&order_info=12"> TEST NHE </a>';
 	}
 
 	public function transactions(){
-		
-		$this->url =  isset($_SERVER['HTTP_REFERER']) ? $this->url : base_url();
+		$this->urls  =  isset($_SERVER['HTTP_REFERER']) ? $this->urls  : base_url();
 		$amount =  $this->input->get_post('amount'); 
 		$order_id =  $this->input->get_post('order_id');  
 		$order_info = $this->input->get_post('order_info'); 
@@ -34,13 +33,13 @@ class Payment extends MY_Controller{
 					$name = $this->visaCharging($params);
 					var_dump($name);
 				}else{
-					redirect( $this->url);
+					redirect($this->urls );
 				}
 			}else{
-				redirect( $this->url);
+				redirect($this->urls );
 			}
 		}else{
-			redirect( $this->url);
+			redirect($this->urls );
 		}
 		
 	}
@@ -51,24 +50,7 @@ class Payment extends MY_Controller{
 		echo "Payment Cancel ";
 	}
 	public function pay(){
-		$trans_ref = isset($_GET["trans_ref"]) ? $_GET["trans_ref"] : NULL;
-		$response_code = isset($_GET["response_code"]) ? $_GET["response_code"] : NULL;
-		if($response_code == "00")
-		{
-			
-			$params = json_encode($_GET);
-			if($this->loging($params)==true){
-				redirect(base_url().'payment/Payment_success');
-			}else{
-				redirect(base_url().'payment/Payment_success');
-			}
-		}else{
-			if($this->loging($params)==true){
-				redirect(base_url().'payment/Payment_Cancel');
-			}else{
-				redirect(base_url().'payment/Payment_Cancel');
-			}
-		}
+	
             
 	}
 	private function loging($params){
