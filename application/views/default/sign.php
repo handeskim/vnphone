@@ -35,7 +35,7 @@
   </div>
   <!-- /.login-logo -->
   <div class="login-box-body">
-    <h5 class="login-box-msg">Đăng nhập hệ thống</br></h5>
+    <h4 class="login-box-msg">ĐĂNG NHẬP</br></h5>
     <form action="#" method="post">
       <div class="form-group has-feedback">
         <input name="username" type="text" class="form-control" placeholder="Email" required />
@@ -46,23 +46,21 @@
         <span class="glyphicon glyphicon-lock form-control-feedback"></span>
       </div>			
       <div class="row">
-       
                 <input type="hidden" name="cmd" class="form-control" value="cmdSign" required />
-        
+
         <div class="col-xs-6">
           <a href="<?php echo base_url();?>register" class="btn btn-default btn-lg">Đăng ký</a>
         </div>
         <!-- /.col -->
         <div class="col-xs-4">
-          <button type="submit" class="btn btn-primary  btn-lg ">Đăng Nhập</button>
+          <button type="submit" class="btn btn-primary  btn-lg ">Đăng Nhập !!!</button>
         </div>
         <!-- /.col -->
       </div>
     </form>
   </div>
   <!-- /.login-box-body -->
-</div>
-<!-- /.login-box -->
+</div><!-- /.login-box -->
 <style>
 .btn{
   line-height: normal !important;

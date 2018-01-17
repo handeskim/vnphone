@@ -22,18 +22,61 @@
 	<li ><a><i class="fa fa-money"></i><span id="pid_score"> </span><a></li>
 	<li class="header" style="color: #4b646f;background: #1a2226;">CÔNG CỤ</li>
 		<?php 
-				   if(!empty($user_data['role'])){
-					   if($user_data['role']==1){
-						   echo '<li><a href="http://vnphones.com/cms/dashboard"><i class="fa fa-dashboard"></i><span>Dashboard</span></a></li>
-	<li ><a href="http://vnphones.com/apps"><i class="fa fa-send"></i> <span>Tools Convert UID</span></a></li>';
-					   }else{
-						   echo '<li ><a href="http://vnphones.com/apps"><i class="fa fa-send"></i> <span>Tools Convert UID</span></a></li>';
-					   }
-				   }
+	   if(!empty($user_data['role'])){
+		   if($user_data['role']==1){
+			   echo '<li><a href="http://vnphones.com/"><i class="fa fa-fw fa-home"></i><span> Trang Chủ </span></a></li><li><a href="'.base_url('cms/dashboard').'"><i class="fa fa-dashboard"></i><span>Dashboard</span></a></li>
+				<li ><a href="'.base_url('cms/reseller').'"><i class="fa fa-gg-circle"></i> <span> Tạo API Đại lý</span></a></li>
+				';
+		   }else{
+			   echo '<li><a href="http://vnphones.com/"><i class="fa fa-fw fa-home"></i><span> Trang Chủ </span></a></li>
+			   ';
+		   }
+	   }
 	?>
-	<li ><a target="_blank" href="http://www.textfilesplitter.com/"><i class="fa fa-edit"></i> <span>Tách Nhỏ File</span></a></li>
-	<li ><a href="<?php echo base_url();?>cms/profile"><i class="fa fa-edit"></i> <span>Đổi Mật Khẩu</span></a></li>
+	<li><a href="'.base_url('apps').'"><i class="fa fa-send"></i> <span>Tools Convert UID</span></a></li>
+	<li class="treeview">
+	  <a href="#">
+		<i class="fa fa-cc-visa"></i>
+		<span>Thanh Toán</span>
+		<span class="pull-right-container">
+		  <i class="fa fa-angle-left pull-right"></i>
+		</span>
+	  </a>
+	  <ul class="treeview-menu">
+			<li ><a  href="<?php echo base_url('cms/pay');?>"><i class="fa fa-cc-visa"></i> <span>Nạp Tài khoản</span></a></li>
+			<li ><a  href="<?php echo base_url('cms/pay/history');?>"><i class="fa fa-history"></i> <span>lịch sử Thanh Toán</span></a></li>
+	  </ul>
+	</li>
+	<li class="treeview">
+	  <a href="#">
+		<i class="fa fa-send"></i>
+		<span> Convert UID</span>
+		<span class="pull-right-container">
+		  <i class="fa fa-angle-left pull-right"></i>
+		</span>
+	  </a>
+	  <ul class="treeview-menu">
+		<li><a href="'.base_url('apps').'"><i class="fa fa-send"></i> <span>Tools Convert UID</span></a></li>
+		<li ><a  href="<?php echo base_url('cms/history');?>"><i class="fa fa-history"></i> <span>lịch sử Convert</span></a></li>
+	<li ><a target="_blank" href="http://www.textfilesplitter.com/"><i class="fa fa-edit"></i> <span>Split Text File</span></a></li>	
+	  </ul>
+	</li>
+	<li class="treeview">
+	  <a href="#">
+		<i class="fa fa-user"></i>
+		<span>Tài khoản</span>
+		<span class="pull-right-container">
+		  <i class="fa fa-angle-left pull-right"></i>
+		</span>
+	  </a>
+	  <ul class="treeview-menu">
+		
+		<li ><a href="<?php echo base_url();?>cms/profile"><i class="fa fa-lock"></i> <span>Đổi Mật Khẩu</span></a></li>
+	  </ul>
+	</li>
+	
 	<li><a href="<?php echo base_url()?>exits"><i class="fa fa-sign-out"></i> <span>Thoát</span></a></li>
+	<li class="header" style="color: #4b646f;background: #1a2226;"><a target="_blank"   href="http://api.vnphones.com"><i class="fa fa-connectdevelop"></i>  For developers</a></li>
   </ul>
 </section>
 <!-- /.sidebar -->

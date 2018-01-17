@@ -122,7 +122,7 @@ class Appscore extends MY_Controller{
 	
 	public function Expired($userid){
 		$this->db = $this->load->database('default', TRUE);
-		$sql = "SELECT `id`,`expired` FROM `users` WHERE `id` = $userid and `level` = 2 limit 1";
+		$sql = "SELECT `id`,`expired` FROM `users` WHERE `id` = $userid and `level` = 2";
 		$query = $this->db->query($sql);
 		$result = $query->result_array();
 		if(!empty($result)){
@@ -130,14 +130,14 @@ class Appscore extends MY_Controller{
 			foreach($result as $value){
 				$expired = strtotime ($value['expired']);
 				if($expired >= $timenow){
-					return $response = 1;
+					return $response = 01;
 				}else{
 					Appscore::update_status_user($userid);
-					return $response = 0;
+					return $response = 00;
 				}
 			}
 		}else{
-			return $response = 0;
+			return $response = 00;
 		}
 	}
 	private function update_status_user($userid){

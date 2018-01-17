@@ -35,8 +35,12 @@
   </div>
   <!-- /.login-logo -->
   <div class="login-box-body">
-    <h5 class="login-box-msg">Đăng ký thành viên</br></h5>
+    <h4 class="login-box-msg">ĐĂNG KÍ</br></h5>
     <form action="#" method="post">
+	<div class="form-group has-feedback">
+        <input id="names" name="names" type="text" class="form-control" placeholder="Họ tên" required />
+        <span class="glyphicon glyphicon-user form-control-feedback"></span>
+      </div>
       <div class="form-group has-feedback">
         <input id="email" name="email" type="email" class="form-control" placeholder="Email" required />
         <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
@@ -46,7 +50,7 @@
         <span class="glyphicon glyphicon-lock form-control-feedback"></span>
       </div>	
       <div class="form-group has-feedback">
-        <input id="pw2" name="password_scure" type="password_scure" class="form-control" placeholder="Xác nhận mật khẩu" required />
+        <input id="pw2" name="password_scure" type="password" class="form-control" placeholder="Xác nhận mật khẩu" required />
         <span class="glyphicon glyphicon-lock form-control-feedback"></span>
       </div>		
       <div class="row">
@@ -55,8 +59,8 @@
           <a href="<?php echo base_url();?>sign" class="btn btn-default btn-lg">Đăng nhập</a>
         </div>
         <!-- /.col -->
-        <div class="col-xs-4">
-          <button type="submit" class="btn btn-primary  btn-lg ">Tạo Tài khoản</button>
+        <div class="col-xs-6">
+          <button type="submit" class="btn btn-primary  btn-lg ">Tạo Tài Khoản</button>
         </div>
         <!-- /.col -->
       </div>

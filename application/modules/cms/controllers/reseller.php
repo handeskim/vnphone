@@ -23,26 +23,78 @@ class Reseller extends MY_Controller{
 		}
 		
 	}
+	public function load_daily(){
+		$sql = "SELECT * FROM users WHERE role = 3";
+		return $this->GlobalMD->query_global($sql);
+	}
+	public function add_reseller(){
+		if($this->permisson == 1){
+			$cmd = $this->input->post('cmd');
+			if(isset($cmd)){
+				if($cmd == "cmdAddReseller"){
+					$reseller = $this->input->post('reseller');
+					if(isset($reseller)){
+						if(!empty($reseller)){
+							$name_reseller = random_partner($reseller);
+							$secret = core_encrypt($name_reseller);
+							$params = array(
+								'name_reseller' => $name_reseller,
+								'id_user_reseller' => $reseller,
+								'secret' => $secret,
+								'apps_id' => $name_reseller,
+								'score' => 30,
+								'status' => 1,
+
+							);
+							$this->db->trans_start();
+							$status = $this->db->insert('reseller', $params); 
+							$this->db->trans_complete();
+							if($status==true){
+								redirect(base_url('cms/reseller'));
+							}else{
+								redirect(base_url('cms/reseller/add_reseller'));
+							}
+						}
+					}
+				}
+			}
+			$msg ='';
+			$data = array(
+				'msg' => $msg,
+				'daily' => $this->load_daily(),
+				'user_data' => $this->user_data,
+				'title'=> 'Dashboard',
+				'title_main' => 'Dashboard',
+			);
+			$this->parser->parse('default/header',$data);
+			$this->parser->parse('default/sidebar',$data);
+			$this->parser->parse('default/main',$data);
+			$this->parser->parse('default/layout/main_add_reseller',$data);
+			$this->parser->parse('default/footer',$data);
+		}else{
+			echo "Not enough authority to access";
+		}
+	}
 	private function load_data_user(){
 		if($this->permisson == 1){
 		
 		$xcrud = Xcrud::get_instance();
 		$xcrud->table('reseller');
 		$xcrud->unset_csv();
+		$xcrud->unset_add();
 		$xcrud->unset_remove();
 		$xcrud->table_name('Danh sách reseller API');
 		$xcrud->label('id_user_reseller','Mã Đại Lý');
 		$xcrud->label('name_reseller','Tên đại lý');
 		$xcrud->label('status','Trạng Thái');
-		
 		$xcrud->relation('status','conf_status','id','name');
 		$xcrud->relation('id_user_reseller','users','id','clients_code' ,'role = 3');
-		// $xcrud->relation('reseller','reseller','id','name_reseller');
-		// $xcrud->columns('name,username,score,expired,role,level,status,reseller');
-		$xcrud->fields('name_reseller,id_user_reseller,score,status');
-		$xcrud->before_insert('update_reseller'); // manualy load
-		// $xcrud->change_type('passwords', 'password', 'md5', array('class'=>'xcrud-input form-control', 'maxlength'=>10,'placeholder'=>'Nhập mật khẩu'));
-		
+		$xcrud->fields('name_reseller,score,status,secret,apps_id');
+		$xcrud->validation_required('name_reseller');
+		$xcrud->validation_required('score');
+		$xcrud->validation_required('status');
+		$xcrud->validation_required('secret');
+		$xcrud->validation_required('apps_id');
 		$response = $xcrud->render();
 		return $response;
 		}else{
@@ -72,7 +124,7 @@ class Reseller extends MY_Controller{
 		$this->parser->parse('default/header',$data);
 		$this->parser->parse('default/sidebar',$data);
 		$this->parser->parse('default/main',$data);
-		$this->parser->parse('default/layout/main_curd_account',$data);
+		$this->parser->parse('default/layout/main_curd_reseller',$data);
 		$this->parser->parse('default/footer',$data);
 	}
 

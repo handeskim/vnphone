@@ -8,6 +8,9 @@ class Apps extends MY_Controller{
 		$config =  array('server' => base_url(),);
 		$this->rest->initialize($config);
 		if(isset($this->login)){
+			if(empty($this->login)){
+				redirect(base_url('sign'));
+			}
 			$this->user_data = $this->session->userdata('data_users');
 			$this->permisson = $this->user_data['role'];
 			$id_clients = $this->user_data['id'];
@@ -149,7 +152,7 @@ class Apps extends MY_Controller{
 		$this->redis->set('response_'.$this->key_pid, json_encode($responseQueryConvert));
 		/////////////////////////////////////////////////////////////////////////
 		$ResultsConvert = $this->ResponseConvertUID();
-		$this->PaymentConvert($ResultsConvert);
+		$PaymentConvert = $this->PaymentConvert($ResultsConvert);
 		/////////////////////////////////////////////////////////////////////////
 		$ResultsConvertCompleteUID = $this->ResponseConvertCompleteUID();
 		$total_convertComplete = count($ResultsConvertCompleteUID);
@@ -161,7 +164,38 @@ class Apps extends MY_Controller{
 				$Percent_convert = round(($Percent*100),1);
 			}
 		}
+		
 		$kotimthay = $total_uid-$total_convert;
+		
+		$uid = $this->uid_clients;
+		$uniqueId = uniqid(rand());
+		$history_key_pid = $uid.$this->key_pid. time().$uniqueId;
+		$this->redis->set($history_key_pid, json_encode($ResultsConvertCompleteUID));
+		$date = date("Y-m-d H:i:s",time());
+		$pkc_save = core_encode('response_complete'.$this->key_pid);	
+		$history_save = array(
+			'key_pid' =>  $this->key_pid,
+			'uid' =>  $uid,
+			'his_key_pid' =>  $history_key_pid,
+			'total_uid' =>  number_format($total_uid),
+			'total_transfer' => number_format($total_convertComplete),
+			'percent_transfer' => (string)$Percent_convert,
+			'uid_found' => number_format($kotimthay),
+			// 'uid_done' => json_encode($ResultsConvertCompleteUID),
+			'pay_transaction' => $PaymentConvert,
+			'history_file' => base_url('excel_export_history?key='.core_encode($history_key_pid)),
+			'excel_url_realtime' => base_url('excel_export_history?key='.core_encode($pkc_save)),
+			'text_url_realtime' => base_url('excel_export_history?key='.$pkc_save),
+			'ip_address' => $this->input->ip_address(),
+			'times' => $date,
+			'renew_history' => time(),
+			'expired_history' => time()+(86400*30),
+			'days_history' => '30',
+		);
+		$this->db->trans_start();
+		$history_setup = $this->db->insert('history', $history_save); 
+		$this->db->trans_complete();
+		
 		$response = array(
 			'total_uid' =>number_format($total_uid),
 			'total_convert' =>number_format($total_convert),
@@ -194,6 +228,7 @@ class Apps extends MY_Controller{
 						$score_update = $score_old - $score_new;
 						$this->GlobalMD->UpdateScroreClients($score_update);
 						$this->redis->set('response_complete'.$this->key_pid, json_encode($array));
+						return true;
 					}
 					if($score_new > $score_old){
 						$score_transfer = $score_new - $score_old;
@@ -202,6 +237,7 @@ class Apps extends MY_Controller{
 						$this->GlobalMD->UpdateScroreClients($score_update);
 						$arrayNewComplete = $this->ConvertArrayToshiff($array,$score_old);
 						$this->redis->set('response_complete'.$this->key_pid, json_encode($arrayNewComplete));
+						return true;
 					}
 					
 			}else{
@@ -209,7 +245,7 @@ class Apps extends MY_Controller{
 			}
 		}else{
 			$this->redis->set('response_complete'.$this->key_pid, json_encode($array));
-		
+			return true;
 		}
 	}
 	private function ResponseConvertCompleteUID(){
