@@ -32,8 +32,8 @@ class Text_export extends MY_Controller{
 	}
 	
 	public function index(){
-		$name_file = rand().date("Y-m-d H-i-s",time());
-		$txtfile = $_SERVER["DOCUMENT_ROOT"].'/download/'.$name_file.'.txt';
+		$name_file = rand();
+		$txtfile = $_SERVER["DOCUMENT_ROOT"].'/convert/download/'.$name_file.'.txt';
 		$handle = fopen($txtfile, 'w') or die('Cannot open file:  '.$txtfile); // check the file is readable
 		$textContent = '';
 		$dump_raw = json_decode($this->redis->get('response_complete'.$this->key_pid));

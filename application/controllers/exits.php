@@ -5,7 +5,7 @@ class Exits extends MY_Controller{
 		
 		$auth_sign = $this->session->userdata('auth_sign');
 		if($auth_sign==false){
-			redirect(base_url('sign'));
+			redirect('https://vnphones.com');
 		}
 	}
 	

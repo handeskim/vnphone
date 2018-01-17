@@ -35,7 +35,6 @@ class Sign extends MY_Controller{
 						'password' => md5($password),
 					);
 					$results = $this->SignCheck($params_sign);
-					
 					if($results==false){
 						$msg = $this->default_error_notfound();
 					}else{

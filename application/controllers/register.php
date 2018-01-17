@@ -14,6 +14,7 @@ class Register extends MY_Controller{
 		$cmd = $this->input->post('cmd');
 		if(isset($cmd)){
 			if($cmd=="cmdRegister"){
+				$names = $this->input->post('names');
 				$email = $this->input->post('email');
 				$password = trim($this->input->post('password'));
 				$password_scure = trim($this->input->post('password_scure'));
@@ -23,26 +24,26 @@ class Register extends MY_Controller{
 							if(md5($password) == md5($password_scure)){
 								if($this->checkEmailUsername($email)==false){
 									$params = array(
-										'name' => $email,
+										'name' => $names,
 										'username' => $email,
+										'clients_code' => '',
 										'passwords' => md5($password),
 										'score' => 50,
 										'role' => 2,
-										'status' => 1,
+										'status' => 2,
 										'level' => 1,
-										'reseller' => 7,
+										'reseller' => 1,
 									);
 									$InstallUser = $this->AddClients($params);
 									if(isset($InstallUser)==true){
 										$mesf = 
-										'Tài khoản đã được đăng kí thành công. Vui lòng liên hệ <a href="http://fb.com/ductran88">Admin</a> để được kích hoạt';
+										'Tài khoản đã được đăng kí thành công. Vui lòng liên hệ <a href="https://m.me/161436914631648">Admin</a> để được kích hoạt: https://m.me/161436914631648';
 										$msg = $this->tmp_default_success($mesf);
-										
 									}else{
 										$msg = $this->tmp_default_error("Vui lòng thử lại");
 									}	
 								}else{
-									$msg = $this->tmp_default_error("Tên đăng nhập đã tồn tại");
+									$msg = $this->tmp_default_error("Email đã tồn tại");
 								}
 							}else{
 								$msg = $this->tmp_default_error("vui lòng kiểm tra lại mật khẩu không giống nhau");
@@ -79,6 +80,12 @@ class Register extends MY_Controller{
 			return true;
 		}
 	}
+	// private function AddClients($params){
+		// $this->db->trans_start();
+		// $this->db->insert('users',$params);
+		// $this->db->trans_complete();
+		// return $this->db->insert_id();
+	// }
 	private function AddClients($params){
 		$this->db = $this->load->database('default', TRUE);
 		$this->db->trans_start();
